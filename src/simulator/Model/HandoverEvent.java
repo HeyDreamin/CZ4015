@@ -1,19 +1,16 @@
-package Model;
+package simulator.Model;
 
-public class InitialEvent extends Event {
+public class HandoverEvent extends Event {
     private double speed;
-    private double position;
     private double duration;
     private boolean direction;
+    private BaseStation newStation;
 
-    public InitialEvent(BaseStation baseStation, double time, int id,
-                        double speed, double position, double duration, boolean direction) {
-        super();
-        this.setBaseStation(baseStation);
-        this.setTime(time);
-        this.setId(id);
+    public HandoverEvent(BaseStation baseStation, BaseStation newStation, double time, int id,
+                         double speed, double duration, boolean direction) {
+        super(baseStation, time, id, 'H');
+        this.newStation = newStation;
         this.speed = speed;
-        this.position = position;
         this.duration = duration;
         this.direction = direction;
     }
@@ -24,14 +21,6 @@ public class InitialEvent extends Event {
 
     public void setSpeed(double speed) {
         this.speed = speed;
-    }
-
-    public double getPosition() {
-        return position;
-    }
-
-    public void setPosition(double position) {
-        this.position = position;
     }
 
     public double getDuration() {
@@ -48,5 +37,13 @@ public class InitialEvent extends Event {
 
     public void setDirection(boolean direction) {
         this.direction = direction;
+    }
+
+    public BaseStation getNewStation() {
+        return newStation;
+    }
+
+    public void setNewStation(BaseStation newStation) {
+        this.newStation = newStation;
     }
 }
