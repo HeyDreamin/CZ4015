@@ -45,21 +45,14 @@ public class EventHandler {
         if (handover.getNewStation().getChannels()>0){
             handover.getNewStation().allocateChannel();
             counter.handoverCounter++;
+            if (terminateInCurrentStation(handover)){
+                insertEvent(new TerminationEvent(baseStations[handover.getNewStation().getId()],
+                        handover.getTime()+handover.getDuration(), handover.getId()));
+            } else {
+                generateHandoverEvent(handover);
+            }
         } else {
             counter.droppedCounter++;
-            removeRelevantEvents(handover);
-        }
-    }
-
-    private void removeRelevantEvents(Event event) {
-        int index = 0;
-        while (index<eventList.size()) {
-            if (eventList.get(index).getId()==event.getId() && (eventList.get(index).type!='I')) {
-//                System.out.println("Deleted:"+eventList.get(index).toString());
-                eventList.remove(index);
-            } else {
-                index++;
-            }
         }
     }
 
@@ -67,55 +60,49 @@ public class EventHandler {
         InitialEvent initial = (InitialEvent) event;
         if (initial.getBaseStation().hasAvailableChannel()) {
             initial.getBaseStation().allocateChannel();
-            TerminationEvent terminal = generateTerminationEvent(initial);
-            insertEvent(terminal);
-            generateHandoverEvent(initial,terminal);
+            if (terminateInCurrentStation(initial)) {
+                insertEvent(
+                        new TerminationEvent(baseStations[initial.getBaseStation().getId()],
+                                initial.getTime()+initial.getDuration(),initial.getId())
+                );
+            } else {
+                generateHandoverEvent(initial);
+            }
         } else {
             counter.blockCounter++;
         }
         counter.initialHandled++;
     }
 
-    private void generateHandoverEvent(InitialEvent initial, TerminationEvent terminal) {
-        double firstTime = initial.getDirection() ? (1-initial.getPosition()):(1+initial.getPosition());
-        firstTime = firstTime/initial.getSpeed() + initial.getTime();
-        int curStationIndex = initial.getBaseStation().getId();
-        int newStationIndex = curStationIndex;
-        for (int i = 0; i < Math.abs(terminal.getBaseStation().getId()-initial.getBaseStation().getId()); i++) {
-            if (initial.getDirection()){
-                newStationIndex++;
-            } else {
-                newStationIndex--;
-            }
-            if (newStationIndex<0||newStationIndex>19){
-                break;
-            }
+    private boolean terminateInCurrentStation(Event event) {
+        return event.getBaseStation().getId()==event.getTerminateID();
+    }
+
+    private void generateHandoverEvent(Event event) {
+        int curStationIndex = event.getBaseStation().getId();
+        if (event instanceof HandoverEvent) {
+            curStationIndex = ((HandoverEvent) event).getNewStation().getId();
+        }
+        int newStationIndex;
+        if (event.direction()){
+            newStationIndex = curStationIndex + 1;
+        } else {
+            newStationIndex = curStationIndex - 1;
+        }
+        if (newStationIndex>19||newStationIndex<0) {
+            insertEvent(new TerminationEvent(baseStations[curStationIndex],
+                    event.getTime()+event.getRemainTime(), event.getId()));
+        } else {
             insertEvent(
                     new HandoverEvent(baseStations[curStationIndex],
                             baseStations[newStationIndex],
-                            firstTime+2*i/initial.getSpeed(),
-                            initial.getId(),
-                            initial.getSpeed(),
-                            initial.getDuration(),
-                            initial.getDirection())
+                            event.getTime() + event.getRemainTime(),
+                            event.getId(),
+                            event.getSpeed(),
+                            event.getDuration() - event.getRemainTime(),
+                            event.direction())
             );
-            curStationIndex = newStationIndex;
         }
-    }
-
-    private TerminationEvent generateTerminationEvent(InitialEvent initialEvent) {
-        double terminatePosition = initialEvent.getTerminatePosition();
-        double initialPosition = initialEvent.getBaseStation().getId()*2+1+initialEvent.getPosition();
-        int stationID = (int)terminatePosition/2;
-        double time = initialEvent.getTime()+initialEvent.getDuration();
-        if (terminatePosition<0) {
-            stationID = 0;
-            time = initialEvent.getTime() + initialPosition/initialEvent.getSpeed();
-        } else if (terminatePosition>40) {
-            stationID = 19;
-            time = initialEvent.getTime() + (40-initialPosition)/initialEvent.getSpeed();
-        }
-        return new TerminationEvent(baseStations[stationID], time, initialEvent.getId());
     }
 
     private void insertEvent(Event event) {

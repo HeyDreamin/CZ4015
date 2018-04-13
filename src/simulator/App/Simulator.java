@@ -38,6 +38,16 @@ public class Simulator {
                 counter.initial();
                 warmed = true;
             }
+            if (!warmed) {
+//                printStations();
+//                System.out.println(event.toString());
+//                if (event instanceof HandoverEvent) {
+//                    System.out.println(event.toString()+"New"+(((HandoverEvent) event).getNewStation().getId()+1));
+//                }
+//                if (event instanceof TerminationEvent){
+//                    System.out.println(event.toString());
+//                }
+            }
             events.remove(event);
         }
     }
@@ -47,7 +57,7 @@ public class Simulator {
         for (int i = 0; i < 20; i++) {
             System.out.print("No."+(i+1)+":"+baseStations[i].getChannels()+" ");
         }
-        System.out.println(s);
+        System.out.println();
         return s;
     }
 

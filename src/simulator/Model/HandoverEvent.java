@@ -1,28 +1,17 @@
 package simulator.Model;
 
 public class HandoverEvent extends Event {
-    private double speed;
     private double duration;
-    private boolean direction;
     private BaseStation newStation;
 
     public HandoverEvent(BaseStation baseStation, BaseStation newStation, double time, int id,
                          double speed, double duration, boolean direction) {
-        super(baseStation, time, id, 'H');
+        super(baseStation, time, id, 'H', direction, speed);
         this.newStation = newStation;
-        this.speed = speed;
         this.duration = duration;
-        this.direction = direction;
     }
 
-    public double getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(double speed) {
-        this.speed = speed;
-    }
-
+    @Override
     public double getDuration() {
         return duration;
     }
@@ -31,19 +20,26 @@ public class HandoverEvent extends Event {
         this.duration = duration;
     }
 
-    public boolean isDirection() {
-        return direction;
-    }
-
-    public void setDirection(boolean direction) {
-        this.direction = direction;
-    }
-
     public BaseStation getNewStation() {
         return newStation;
     }
 
     public void setNewStation(BaseStation newStation) {
         this.newStation = newStation;
+    }
+
+    @Override
+    public int getTerminateID() {
+        int currentStation = getBaseStation().getId();
+        if (direction()){
+            return getSpeed()*duration>2 ? currentStation+1:currentStation;
+        } else {
+            return getSpeed()*duration>2 ? currentStation-1:currentStation;
+        }
+    }
+
+    @Override
+    public double getRemainTime() {
+        return getTerminateID()==getBaseStation().getId()? duration:2/getSpeed();
     }
 }

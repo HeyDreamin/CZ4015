@@ -5,12 +5,16 @@ public class Event implements Comparable {
     private double time;
     private int id;
     public char type;
+    private boolean direction;
+    private double speed;
 
-    Event(BaseStation baseStation, double time, int id, char type) {
+    Event(BaseStation baseStation, double time, int id, char type, boolean direction, double speed) {
         this.baseStation = baseStation;
         this.time = time;
         this.id = id;
         this.type = type;
+        this.direction = direction;
+        this.speed = speed;
     }
 
     public BaseStation getBaseStation() {
@@ -37,6 +41,29 @@ public class Event implements Comparable {
         this.id = id;
     }
 
+    public boolean direction() {
+        return direction;
+    }
+
+    public void setDirection(boolean direction) {
+        this.direction = direction;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public int getTerminateID(){
+        return baseStation.getId();
+    }
+
+    public double getDuration() { return 0.0; }
+
+    public double getRemainTime() { return 0.0; }
 
     @Override
     public int compareTo(Object o) {
